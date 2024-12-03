@@ -19,38 +19,39 @@ Vagrant.configure("2") do |config|
     vb.cpus = 2           # Asigna 2 CPU a la VM
   end
   
-  config.vm.boot_timeout = 300
+  config.vm.boot_timeout = 1000
 
-  config.vm.define "balanceadorJorge" do |balanceadorJorge|
-    balanceadorJorge.vm.hostname = "balanceadorJorge"
-    balanceadorJorge.vm.network "private_network", ip:"192.168.10.33", virtualbox_intnet: "red_apache"
-#    balanceadorJorge.vm.provision "shell", path: "provision.sh"
+  config.vm.define "nfsJorge" do |nfsJorge|
+    nfsJorge.vm.hostname = "nfsJorge"
+    nfsJorge.vm.network "public_network"
+    nfsJorge.vm.network "private_network", ip:"192.168.20.36", virtualbox_intnet: "red_nfs"
+    nfsJorge.vm.provision "shell", path: "prov-nfs.sh"
+  end
+  config.vm.define "bbddJorge" do |bbddJorge|
+    bbddJorge.vm.hostname = "bbddJorge"
+    bbddJorge.vm.network "private_network", ip:"192.168.30.37", virtualbox_intnet: "red_bbdd"
+    bbddJorge.vm.provision "shell", path: "prov-bbdd.sh"
   end
   config.vm.define "back1Jorge" do |back1Jorge|
     back1Jorge.vm.hostname = "back1Jorge"
     back1Jorge.vm.network "private_network", ip:"192.168.10.34", virtualbox_intnet: "red_apache"
     back1Jorge.vm.network "private_network", ip:"192.168.20.34", virtualbox_intnet: "red_nfs"
     back1Jorge.vm.network "private_network", ip:"192.168.30.34", virtualbox_intnet: "red_bbdd"
-#    back1Jorge.vm.provision "shell", path: "provision.sh"
+    back1Jorge.vm.provision "shell", path: "prov-back1.sh"
   end
   config.vm.define "back2Jorge" do |back2Jorge|
     back2Jorge.vm.hostname = "back2Jorge"
     back2Jorge.vm.network "private_network", ip:"192.168.10.35", virtualbox_intnet: "red_apache"
     back2Jorge.vm.network "private_network", ip:"192.168.20.35", virtualbox_intnet: "red_nfs"
     back2Jorge.vm.network "private_network", ip:"192.168.30.35", virtualbox_intnet: "red_bbdd"
-#    back2Jorge.vm.provision "shell", path: "provision.sh"
+    back2Jorge.vm.provision "shell", path: "prov-back1.sh"
   end
-  config.vm.define "nfsJorge" do |nfsJorge|
-    nfsJorge.vm.hostname = "nfsJorge"
-    nfsJorge.vm.network "private_network", ip:"192.168.20.36", virtualbox_intnet: "red_nfs"
-#    nfsJorge.vm.provision "shell", path: "provision.sh"
+  config.vm.define "balanceadorJorge" do |balanceadorJorge|
+    balanceadorJorge.vm.hostname = "balanceadorJorge"
+    balanceadorJorge.vm.network "public_network"
+    balanceadorJorge.vm.network "private_network", ip:"192.168.10.33", virtualbox_intnet: "red_apache"
+    balanceadorJorge.vm.provision "shell", path: "prov-balanceador.sh"
   end
-  config.vm.define "bbddJorge" do |bbddJorge|
-    bbddJorge.vm.hostname = "bbddJorge"
-    bbddJorge.vm.network "private_network", ip:"192.168.30.37", virtualbox_intnet: "red_bbdd"
-#    bbddJorge.vm.provision "shell", path: "provision.sh"
-  end
-
 
 
   # Disable automatic box update checking. If you disable this, then
