@@ -23,7 +23,6 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "nfsJorge" do |nfsJorge|
     nfsJorge.vm.hostname = "nfsJorge"
-    nfsJorge.vm.network "public_network"
     nfsJorge.vm.network "private_network", ip:"192.168.20.36", virtualbox_intnet: "red_nfs"
     nfsJorge.vm.provision "shell", path: "prov-nfs.sh"
   end
