@@ -1,48 +1,41 @@
-#!/bin/bash
+# Cambiar nombre de host
+sudo hostnamectl set-hostname balanceadorjorge
 
-# Variables
-DB_NAME="wordpress"
-DB_USER="tiendawp"
-DB_PASSWORD="WP1234."
-WP_URL="http://wordpress.org/latest.tar.gz"
-WP_DIR="/var/www/html"
+# Actualizar lista de paquetes
+sudo apt update -y
 
-# Actualizar el sistema
-sudo apt-get update -y
-sudo apt-get upgrade -y
+# Instalar servidor MySQL
+sudo apt install mysql-server -y
 
-# Instalar Apache
-sudo apt-get install apache2 -y
+# Configurar MySQL para permitir conexiones remotas
+sudo sed -i 's/^bind-address.*/bind-address = 0.0.0.0/' /etc/mysql/mysql.conf.d/mysqld.cnf
 
-# Instalar MySQL
-sudo apt-get install mysql-server -y
+# Reiniciar servicio MySQL para aplicar cambios
+sudo systemctl restart mysql
 
-# Instalar PHP y módulos necesarios
-sudo apt-get install php libapache2-mod-php php-mysql -y
+# Cambiar a usuario root
+sudo su
 
-# Descargar y configurar WordPress
-wget -c $WP_URL
-tar -xzvf latest.tar.gz
-sudo mv wordpress/* $WP_DIR
-
-# Configurar permisos
-sudo chown -R www-data:www-data $WP_DIR
-sudo chmod -R 755 $WP_DIR
+# Ingresar a la consola de MySQL como usuario root
+mysql -u root
 
 # Crear base de datos para WordPress
-sudo mysql -u root -e "CREATE DATABASE $DB_NAME;"
-sudo mysql -u root -e "CREATE USER '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASSWORD';"
-sudo mysql -u root -e "GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'localhost';"
-sudo mysql -u root -e "FLUSH PRIVILEGES;"
+CREATE DATABASE wordpress_db;
 
-# Configurar archivo wp-config.php
-cd $WP_DIR
-cp wp-config-sample.php wp-config.php
-sed -i "s/database_name_here/$DB_NAME/" wp-config.php
-sed -i "s/username_here/$DB_USER/" wp-config.php
-sed -i "s/password_here/$DB_PASSWORD/" wp-config.php
+# Aplicar cambios de privilegios
+FLUSH PRIVILEGES;
 
-# Reiniciar Apache
-sudo systemctl restart apache2
+# Crear usuario para WordPress con acceso desde una subred específica
+CREATE USER 'user_wp'@'192.168.10.%' IDENTIFIED BY 'Pass1234.';
 
-echo "Provisionamiento completado. WordPress está instalado y configurado."
+# Conceder todos los privilegios al usuario creado sobre la base de datos de WordPress
+GRANT ALL PRIVILEGES ON wordpress_db.* TO 'user_wp'@'192.168.10.%';
+
+# Aplicar cambios de privilegios
+FLUSH PRIVILEGES;
+
+# Salir de la consola de MySQL
+exit
+
+# Reiniciar servicio MySQL para asegurar que todos los cambios se apliquen
+sudo systemctl restart mysql
